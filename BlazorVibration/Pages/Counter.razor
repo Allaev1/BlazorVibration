@@ -1,6 +1,8 @@
 ﻿@page "/counter"
+@using BlazorCurrentDevice;
 
 @inject IJSRuntime jsRuntime
+@inject IBlazorCurrentDeviceService blazorCurrentDeviceService
 
 <PageTitle>Counter</PageTitle>
 
@@ -10,9 +12,21 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
-<button class="btn btn-primary" @onclick="VibrateAsync">Click me for vibration</button>
+<button id="vibration-button" class="btn btn-primary" @onclick="VibrateAsync">Click me for vibration</button>
+
+<style>
+    #vibration-button{
+        visibility: @visibility;
+    }
+</style>
 
 @code {
+    private const string ANDROIN_OS = "android";
+    private const string IOS_OS = "ios";
+    private const string VISIBLE = "visible";
+    private const string HIDDEN = "hidden";
+    private string visibility = VISIBLE;
+
     private int currentCount = 0;
 
     private void IncrementCount()
@@ -23,5 +37,19 @@
     private async Task VibrateAsync()
     {
         await jsRuntime.InvokeVoidAsync("vibrate", 200);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var os = await blazorCurrentDeviceService.OS();
+
+        if (os is ANDROIN_OS || os is IOS_OS)
+        {
+            visibility = VISIBLE;
+        }
+        else
+        {
+            visibility = HIDDEN;
+        }
     }
 }
